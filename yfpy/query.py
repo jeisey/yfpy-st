@@ -88,7 +88,7 @@ class YahooFantasySportsQuery(object):
 
     def _authenticate(self) -> None:
         """Authenticate with the Yahoo Fantasy Sports REST API.
-
+    
         Returns:
             None
         """
@@ -96,13 +96,15 @@ class YahooFantasySportsQuery(object):
         if self._yahoo_access_token and self._yahoo_refresh_token:
             # Tokens are already provided, no need to authenticate again
             return
-
+    
         # Create OAuth2 object and authenticate
         self.oauth = OAuth2(self._yahoo_consumer_key, self._yahoo_consumer_secret, 
                             from_file=str(self._auth_dir / "token.json"), 
                             browser_callback=self._browser_callback)
         if not self.oauth.token_is_valid():
             self.oauth.refresh_access_token()
+        logger.debug("Authentication successful, OAuth object assigned.")
+
 
     def cleanup(self) -> None:
         """Cleanup temporary files and directories."""
