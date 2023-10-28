@@ -33,7 +33,7 @@ from yfpy.utils import jsonify_data, prettify_data, reformat_json_list, unpack_d
 logger = get_logger(__name__)
 
 # suppress yahoo-oauth debug logging
-logging.getLogger("yahoo_oauth").setLevel(level=logging.INFO)
+logging.getLogger("yahoo_oauth").setLevel(level=logging.DEBUG)
 
 
 # noinspection PyTypeChecker, PyUnresolvedReferences
@@ -97,14 +97,16 @@ class YahooFantasySportsQuery(object):
             # Tokens are already provided, no need to authenticate again
             return
     
-        # Create OAuth2 object and authenticate
-        self.oauth = OAuth2(self._yahoo_consumer_key, self._yahoo_consumer_secret, 
-                            from_file=str(self._auth_dir / "token.json"), 
-                            browser_callback=self._browser_callback)
-        if not self.oauth.token_is_valid():
-            self.oauth.refresh_access_token()
-        logger.debug("Authentication successful, OAuth object assigned.")
-
+        try:
+            # Create OAuth2 object and authenticate
+            self.oauth = OAuth2(self._yahoo_consumer_key, self._yahoo_consumer_secret, 
+                                from_file=str(self._auth_dir / "token.json"), 
+                                browser_callback=self._browser_callback)
+            if not self.oauth.token_is_valid():
+                self.oauth.refresh_access_token()
+            logger.debug("Authentication successful, OAuth object assigned.")
+        except Exception as e:
+            logger.exception("Authentication failed: %s", str(e))
 
     def cleanup(self) -> None:
         """Cleanup temporary files and directories."""
