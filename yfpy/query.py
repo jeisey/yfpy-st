@@ -44,7 +44,7 @@ class YahooFantasySportsQuery(object):
 
     def __init__(self, auth_dir: Union[Path, str], league_id: str, game_id: int = None, game_code: str = "nfl",
                  offline: bool = False, all_output_as_json_str: bool = False, consumer_key: str = None,
-                 consumer_secret: str = None, browser_callback: bool = True, retries: int = 3, backoff: int = 0):
+                 consumer_secret: str = None, access_token: str = None, refresh_token: str = None, browser_callback: bool = True, retries: int = 3, backoff: int = 0):
         """Instantiate a YahooQueryObject for running queries against the Yahoo fantasy REST API.
 
         Args:
@@ -103,6 +103,8 @@ class YahooFantasySportsQuery(object):
         self._auth_dir: Path = auth_dir if isinstance(auth_dir, PosixPath) else Path(auth_dir)
         self._yahoo_consumer_key: str = consumer_key
         self._yahoo_consumer_secret: str = consumer_secret
+        self._yahoo_access_token = access_token
+        self._yahoo_refresh_token = refresh_token
         self._yahoo_access_token: str = None
         self._browser_callback: bool = browser_callback
         self._retries: int = retries
@@ -123,22 +125,20 @@ class YahooFantasySportsQuery(object):
         if not self.offline:
             self._authenticate()
 
-    def _authenticate(self) -> None:
-        """Authenticate with the Yahoo Fantasy Sports REST API.
-    
-        Returns:
-            None
-    
-        """
-        logger.debug("Authenticating with Yahoo.")
-    
-        if 'yahoo_access_token' in st.session_state and 'yahoo_refresh_token' in st.session_state:
-            self._yahoo_access_token = st.session_state['yahoo_access_token']
-            self._yahoo_refresh_token = st.session_state['yahoo_refresh_token']
+    def _authenticate(self):
+        # Use the stored access token and refresh token for authentication
+        if self._yahoo_access_token and self._yahoo_refresh_token:
+            token_info = {
+                "access_token": self._yahoo_access_token,
+                "refresh_token": self._yahoo_refresh_token,
+                "consumer_key": self._yahoo_consumer_key,
+                "consumer_secret": self._yahoo_consumer_secret
+            }
+            self.oauth = OAuth2(None, None, token=token_info)
         else:
-            error_msg = "Access token and refresh token not found in session state. Please authenticate first."
-            logger.error(error_msg)
-            raise ValueError(error_msg)
+            # You can keep the existing authentication flow here as a fallback
+            # or raise an error if the tokens are not provided.
+            raise ValueError("Access token and refresh token must be provided for authentication.")
 
     def get_response(self, url: str) -> Response:
         """Retrieve Yahoo Fantasy Sports data from the REST API.
