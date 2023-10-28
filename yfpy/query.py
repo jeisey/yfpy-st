@@ -19,10 +19,12 @@ class YahooFantasySportsQuery(object):
 
     YFO = TypeVar("YFO", bound=YahooFantasyObject)
 
-    def __init__(self, auth_dir: Union[Path, str], league_id: str, game_id: int = None, game_code: str = "nfl",
-                 offline: bool = False, all_output_as_json_str: bool = False, consumer_key: str = None, unique_id: str,
-                 consumer_secret: str = None, access_token: str = None, refresh_token: str = None, browser_callback: bool = True, retries: int = 3, backoff: int = 0):
-        """Instantiate a YahooQueryObject for running queries against the Yahoo fantasy REST API."""
+    def __init__(self, auth_dir: Union[Path, str], league_id: str, unique_id: str, 
+             game_id: int = None, game_code: str = "nfl", offline: bool = False, 
+             all_output_as_json_str: bool = False, consumer_key: str = None, 
+             consumer_secret: str = None, access_token: str = None, 
+             refresh_token: str = None, browser_callback: bool = True, 
+             retries: int = 3, backoff: int = 0):
 
         # Initialize attributes
         self._auth_dir: Path = auth_dir if isinstance(auth_dir, PosixPath) else Path(auth_dir)
