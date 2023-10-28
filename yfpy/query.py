@@ -104,7 +104,7 @@ class YahooFantasySportsQuery(object):
                 logger.error("Consumer key and secret are not provided, and private.json does not exist.")
                 return
     
-        # Create OAuth2 object
+       # Create OAuth2 object
         self.oauth = OAuth2(self._yahoo_consumer_key, self._yahoo_consumer_secret, 
                             from_file=str(self._auth_dir / "token.json"), 
                             browser_callback=self._browser_callback)
@@ -112,12 +112,25 @@ class YahooFantasySportsQuery(object):
         if self._yahoo_access_token and self._yahoo_refresh_token:
             # Tokens are already provided, no need to authenticate again
             logger.debug("Tokens are already provided.")
+            self.oauth.token = {
+                'access_token': self._yahoo_access_token,
+                'refresh_token': self._yahoo_refresh_token,
+                'token_type': 'bearer',
+                'expires_in': 3600,  # assuming a default value, you might want to adjust this
+            }
+            self.oauth.token_time = time.time()
             return
     
-        # complete OAuth2 3-legged handshake by either refreshing existing token or requesting account access
+        # If tokens are not provided, complete OAuth2 3-legged handshake
         if not self.oauth.token_is_valid():
-            logger.debug("Token is not valid, refreshing access token.")
-            self.oauth.refresh_access_token()
+            logger.debug("Token is not valid or not provided, refreshing access token.")
+            if not self._browser_callback:
+                print("Visit the following URL, log in, and copy the code:")
+                print(self.oauth.get_authorization_url())
+                auth_code = input("Enter the code here: ")
+                self.oauth.get_access_token(auth_code)
+            else:
+                self.oauth.refresh_access_token()
         logger.debug("Authentication successful, OAuth object assigned.")
 
 
