@@ -124,21 +124,21 @@ class YahooFantasySportsQuery(object):
             self._authenticate()
 
     def _authenticate(self) -> None:
-    """Authenticate with the Yahoo Fantasy Sports REST API.
-
-    Returns:
-        None
-
-    """
-    logger.debug("Authenticating with Yahoo.")
-
-    if 'yahoo_access_token' in st.session_state and 'yahoo_refresh_token' in st.session_state:
-        self._yahoo_access_token = st.session_state['yahoo_access_token']
-        self._yahoo_refresh_token = st.session_state['yahoo_refresh_token']
-    else:
-        error_msg = "Access token and refresh token not found in session state. Please authenticate first."
-        logger.error(error_msg)
-        raise ValueError(error_msg)
+        """Authenticate with the Yahoo Fantasy Sports REST API.
+    
+        Returns:
+            None
+    
+        """
+        logger.debug("Authenticating with Yahoo.")
+    
+        if 'yahoo_access_token' in st.session_state and 'yahoo_refresh_token' in st.session_state:
+            self._yahoo_access_token = st.session_state['yahoo_access_token']
+            self._yahoo_refresh_token = st.session_state['yahoo_refresh_token']
+        else:
+            error_msg = "Access token and refresh token not found in session state. Please authenticate first."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
 
     def get_response(self, url: str) -> Response:
         """Retrieve Yahoo Fantasy Sports data from the REST API.
