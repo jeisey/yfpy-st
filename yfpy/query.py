@@ -102,7 +102,7 @@ class YahooFantasySportsQuery(object):
             executed_queries (list[dict[str, Any]]): List of completed queries and their responses.
 
         """
-        self._auth_dir: Path = auth_dir if isinstance(auth_dir, PosixPath) else Path(auth_dir)
+        # self._auth_dir: Path = auth_dir if isinstance(auth_dir, PosixPath) else Path(auth_dir)
         self._yahoo_access_token = access_token
         self._yahoo_refresh_token = refresh_token
         self._yahoo_consumer_key = consumer_key
