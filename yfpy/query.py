@@ -8,6 +8,7 @@ from typing import Union, Dict, Any, List, TypeVar, Type
 from yfpy.models import YahooFantasyObject
 from yfpy.logger import get_logger
 from requests import Response
+from typing import Callable
 
 
 logger = get_logger(__name__)
