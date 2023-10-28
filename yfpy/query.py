@@ -7,6 +7,8 @@ from pathlib import Path, PosixPath
 from typing import Union, Dict, Any, List, TypeVar, Type
 from yfpy.models import YahooFantasyObject
 from yfpy.logger import get_logger
+from requests import Response
+
 
 logger = get_logger(__name__)
 
