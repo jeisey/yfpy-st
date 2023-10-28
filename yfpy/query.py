@@ -126,19 +126,27 @@ class YahooFantasySportsQuery(object):
             self._authenticate()
 
     def _authenticate(self):
-        # Use the stored access token and refresh token for authentication
-        if self._yahoo_access_token and self._yahoo_refresh_token:
-            token_info = {
-                "access_token": self._yahoo_access_token,
-                "refresh_token": self._yahoo_refresh_token,
-                "consumer_key": self._yahoo_consumer_key,
-                "consumer_secret": self._yahoo_consumer_secret
-            }
+        if not self._yahoo_access_token:
+            raise ValueError("Access token is missing.")
+        if not self._yahoo_refresh_token:
+            raise ValueError("Refresh token is missing.")
+        if not self._yahoo_consumer_key:
+            raise ValueError("Consumer key is missing.")
+        if not self._yahoo_consumer_secret:
+            raise ValueError("Consumer secret is missing.")
+    
+        token_info = {
+            "access_token": self._yahoo_access_token,
+            "refresh_token": self._yahoo_refresh_token,
+            "consumer_key": self._yahoo_consumer_key,
+            "consumer_secret": self._yahoo_consumer_secret
+        }
+        
+        try:
             self.oauth = OAuth2(None, None, token=token_info)
-        else:
-            # You can keep the existing authentication flow here as a fallback
-            # or raise an error if the tokens are not provided.
-            raise ValueError("Access token and refresh token must be provided for authentication.")
+        except Exception as e:
+            logger.exception("Failed to authenticate with Yahoo:")
+            raise RuntimeError("Failed to authenticate with Yahoo. Please check the logs for more details.") from e
 
     def get_response(self, url: str) -> Response:
         """Retrieve Yahoo Fantasy Sports data from the REST API.
