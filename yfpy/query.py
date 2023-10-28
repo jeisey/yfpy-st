@@ -91,34 +91,35 @@ class YahooFantasySportsQuery(object):
             None
         """
         logger.debug("Authenticating with Yahoo.")
+        
+        # If consumer key and secret are not provided, try to load them from the private.json file
+        if not self._yahoo_consumer_key or not self._yahoo_consumer_secret:
+            private_json_path = self._auth_dir / "private.json"
+            if private_json_path.is_file():
+                with open(private_json_path) as yahoo_app_credentials:
+                    auth_info = json.load(yahoo_app_credentials)
+                    self._yahoo_consumer_key = auth_info["consumer_key"]
+                    self._yahoo_consumer_secret = auth_info["consumer_secret"]
+            else:
+                logger.error("Consumer key and secret are not provided, and private.json does not exist.")
+                return
+    
+        # Create OAuth2 object
+        self.oauth = OAuth2(self._yahoo_consumer_key, self._yahoo_consumer_secret, 
+                            from_file=str(self._auth_dir / "token.json"), 
+                            browser_callback=self._browser_callback)
+        
         if self._yahoo_access_token and self._yahoo_refresh_token:
             # Tokens are already provided, no need to authenticate again
             logger.debug("Tokens are already provided.")
             return
     
-        try:
-            # If consumer key and secret are not provided, try to load them from the private.json file
-            if not self._yahoo_consumer_key or not self._yahoo_consumer_secret:
-                private_json_path = self._auth_dir / "private.json"
-                if private_json_path.is_file():
-                    with open(private_json_path) as yahoo_app_credentials:
-                        auth_info = json.load(yahoo_app_credentials)
-                        self._yahoo_consumer_key = auth_info["consumer_key"]
-                        self._yahoo_consumer_secret = auth_info["consumer_secret"]
-                else:
-                    logger.error("Consumer key and secret are not provided, and private.json does not exist.")
-                    return
-    
-            # Create OAuth2 object and authenticate
-            self.oauth = OAuth2(self._yahoo_consumer_key, self._yahoo_consumer_secret, 
-                                from_file=str(self._auth_dir / "token.json"), 
-                                browser_callback=self._browser_callback)
-            if not self.oauth.token_is_valid():
-                logger.debug("Token is not valid, refreshing access token.")
-                self.oauth.refresh_access_token()
-            logger.debug("Authentication successful, OAuth object assigned.")
-        except Exception as e:
-            logger.exception("Authentication failed: %s", str(e))
+        # complete OAuth2 3-legged handshake by either refreshing existing token or requesting account access
+        if not self.oauth.token_is_valid():
+            logger.debug("Token is not valid, refreshing access token.")
+            self.oauth.refresh_access_token()
+        logger.debug("Authentication successful, OAuth object assigned.")
+
 
     def cleanup(self) -> None:
         """Cleanup temporary files and directories."""
