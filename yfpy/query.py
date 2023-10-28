@@ -124,47 +124,21 @@ class YahooFantasySportsQuery(object):
             self._authenticate()
 
     def _authenticate(self) -> None:
-        """Authenticate with the Yahoo Fantasy Sports REST API.
+    """Authenticate with the Yahoo Fantasy Sports REST API.
 
-        Returns:
-            None
+    Returns:
+        None
 
-        """
-        logger.debug("Authenticating with Yahoo.")
+    """
+    logger.debug("Authenticating with Yahoo.")
 
-        if self._yahoo_consumer_key and self._yahoo_consumer_secret:
-            self._yahoo_consumer_key = str(self._yahoo_consumer_key)
-            self._yahoo_consumer_secret = str(self._yahoo_consumer_secret)
-            auth_info = {"consumer_key": self._yahoo_consumer_key, "consumer_secret": self._yahoo_consumer_secret}
-        else:
-            private_json_path = self._auth_dir / "private.json"
-            if self._yahoo_consumer_key or self._yahoo_consumer_secret:
-                logger.warning(f"Must supply both the consumer key AND consumer secret to authenticate with user"
-                               f"defined credentials. Defaulting to credentials located in {private_json_path}.")
-
-            # load credentials
-            with open(private_json_path) as yahoo_app_credentials:
-                auth_info = json.load(yahoo_app_credentials)
-            self._yahoo_consumer_key = auth_info["consumer_key"]
-            self._yahoo_consumer_secret = auth_info["consumer_secret"]
-
-        # load or create OAuth2 refresh token
-        token_file_path = self._auth_dir / "token.json"
-        if token_file_path.is_file():
-            with open(token_file_path) as yahoo_oauth_token:
-                auth_info = json.load(yahoo_oauth_token)
-        else:
-            with open(token_file_path, "w") as yahoo_oauth_token:
-                json.dump(auth_info, yahoo_oauth_token)
-
-        if "access_token" in auth_info.keys():
-            self._yahoo_access_token = auth_info["access_token"]
-
-        # complete OAuth2 3-legged handshake by either refreshing existing token or requesting account access
-        # and returning a verification code to input to the command line prompt
-        self.oauth = OAuth2(None, None, from_file=token_file_path, browser_callback=self._browser_callback)
-        if not self.oauth.token_is_valid():
-            self.oauth.refresh_access_token()
+    if 'yahoo_access_token' in st.session_state and 'yahoo_refresh_token' in st.session_state:
+        self._yahoo_access_token = st.session_state['yahoo_access_token']
+        self._yahoo_refresh_token = st.session_state['yahoo_refresh_token']
+    else:
+        error_msg = "Access token and refresh token not found in session state. Please authenticate first."
+        logger.error(error_msg)
+        raise ValueError(error_msg)
 
     def get_response(self, url: str) -> Response:
         """Retrieve Yahoo Fantasy Sports data from the REST API.
